@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>JQuery 实现瀑布流</title>
+    <style>
+        body{
+            text-align: center;
+            margin: 0;
+            padding: 0;
+            background-color: #F7F7F7;
+            font-family: "微软雅黑";
+        }
+        .wrapper{
+            padding: 50px;
+        }
+        .items{
+            position: relative;
+        }
+        .item{
+            width: 260px;
+            padding: 5px;
+            position: absolute;
+            border: 1px solid lightgrey;
+        }
+        img{
+            display: block;
+            width: 100%;           
+        }
+        .tips{
+            width: 280px;
+            height: 40px;
+            margin: 30px auto 0;
+            line-height: 40px;
+            background-color: hotpink;
+            border-radius: 6px;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+    </style>
+    <!-- 导入jq -->
+    <script src="js/jquery-3.3.1.min.js"></script>
+    <!-- 导入 jq插件 -->    
+    <script src="js/jquery.waterfall.js"></script> 
+    <!-- 导入模板插件 -->   
+    <script src="js/template-native.js"></script>    
+       
+</head>
+
+<body>
+    <h1>瀑布流 展示页面</h1>
+    <div class="wrapper">
+        <!-- items 作为 瀑布流的容器  瀑布流中的 元素的 宽度 是固定的 -->
+        <div class="items"></div>
+        <p class="tips loading" onclick="getData()">点击加载……</p>
+    </div>
+</body>
+
+</html>
+<!-- 定义的模板 -->
+<script type="text/template" id="template_01">
+    <% for(var i=0;i<items.length;i++){ %>
+        <div class="item">
+            <img src="<%= items[i].path %>" alt="">
+            <p><%= items[i].text %></p>
+        </div>
+    <% } %>
+    
+</script>
+<script>
+    function getData(){
+        //jq发ajax
+        $.ajax({
+            url:"20180911-waterfall.php",
+            dataType:"json",
+            success: function(backData){
+                console.log(backData);
+                // 数据 有了 定义模板 生成html标签
+                // template(模板id,数据)  id  对象  {items:[]}
+                var str=template("template_01",backData);
+                // 使用 jq  追加到 界面上               
+                $(".items").append(str);
+
+                // 修改 布局内容
+                /*
+                        可以直接使用 jq的对象 点出来的方法 除了jq本身，只有jq的插件
+                        这里的瀑布流 就是我们自己封装的jq插件
+                */               
+                // jQuery3.0以后不支持$('#id').load(function() { });写法
+                // 需用on('load',function ...... )                
+                // 待图片加载完成后再进行定位，否则会因为图片没设定高度而导致布局重叠
+                $(".item>img").on("load",function(){
+                    $(".items").waterfall();
+                });               
+            }
+        })
+    }
+</script>
